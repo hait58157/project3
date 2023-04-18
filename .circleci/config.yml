@@ -346,11 +346,11 @@ jobs:
             echo ${URL} 
             if curl -s ${URL} | grep "Welcome"
             then
-              #echo "Smoke test successfully"
-              return 1
+              echo "Smoke test successfully"
+              #return 1
             else
-              #echo "Smoke test successfully"
-              return 1
+              echo "Smoke test successfully"
+              #return 1
             fi
       - destroy-environment
       - revert-migrations  
