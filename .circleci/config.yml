@@ -328,16 +328,14 @@ jobs:
       - run:
           name: Backend smoke test.
           command: |
-            export BACKEND_IP=$(aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
+            #export BACKEND_IP=$(aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
             if curl "${API_URL}/api/status" | grep "ok"
             then
-              echo "Smoke test successfully"
-              #return 0
+              return 0
             else
-              echo "Smoke test successfully"
-              #return 1
+              return 1
             fi
       - run:
           name: Frontend smoke test.
@@ -346,11 +344,9 @@ jobs:
             echo ${URL} 
             if curl -s ${URL} | grep "Welcome"
             then
-              echo "Smoke test successfully"
-              #return 1
+              return 1
             else
-              echo "Smoke test successfully"
-              #return 1
+              return 1
             fi
       - destroy-environment
       - revert-migrations  
