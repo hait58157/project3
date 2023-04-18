@@ -255,17 +255,12 @@ jobs:
       - run:
           name: Deploy frontend objects
           command: |
-            echo "--------cd frontend--------"
             cd frontend
             pwd
-            echo "--------npm install--------"
             npm install
-            echo "--------npm run build--------"
             npm run build
-            echo "--------tar dist--------"
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             ls -la
-            echo "--------cp dist to s3--------"
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive     
                     
   deploy-backend:
@@ -307,20 +302,14 @@ jobs:
             cd backend
             pwd
             ls -la
-            echo "--------npm install typescript -g--------"
             npm install typescript -g
-            echo "--------npm i--------"
-            npm i 
-            echo "--------npm run build--------"
+            npm i
             npm run build
-            echo "--------tar backend--------"
             cd ..
             tar -C backend -czf artifact.tar.gz .
             pwd
-            echo "--------go to ansible--------"
             cd .circleci/ansible
             pwd
-            echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
 
