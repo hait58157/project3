@@ -185,7 +185,7 @@ jobs:
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints: ["a3:bf:b4:9a:4b:90:27:10:1c:f1:24:d8:72:67:e2:b6:5e:2d:31:ce"]
+          fingerprints: ["34:36:3c:94:f3:37:2e:b0:12:c8:94:e8:79:e6:54:1a:49:85:9f:e0"]
       - run:
           name: Install dependencies
           command: |
@@ -204,60 +204,128 @@ jobs:
             ansible-playbook -i inventory.txt configure-server.yml
       - destroy-environment     
 
-#   run-migrations:
-#     docker:
-#       Docker image here that supports NodeJS
-#     steps:
-#       Checkout code from git
-#       - run:
-#           name: Run migrations
-#           command: |
-#             Your code here
-#             exit 1
-#       - run:
-#           name: Send migration results to memstash
-#           command: |
-#             Your code here
-#             exit 1
-#      Here's where you will add some code to rollback on failure      
+run-migrations:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [backend-build]      
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Run migrations
+          command: |
+            cd backend
+            npm install
+            npm run migrations > migrations_dump.txt
+      - run:
+          name: Send migration results to memstash
+          command: |
+            if grep -q "has been executed successfully." backend/migrations_dump.txt
+            then
+                # If you are using memstash.io, generate the token "7933fe63-4687-4fa1-8426-aa25aa1730ec" on the website
+                #curl -H "Content-Type: text/plain" -H "token: 7933fe63-4687-4fa1-8426-aa25aa1730ec" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
+                # If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
+                #curl https://kvdb.io/9GE4jRtKznmVKRfvdBABBe/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+                echo "Run migrations successfully!"
 
-#   deploy-frontend:
-#     docker:
-#       Docker image here that supports AWS CLI
-#     steps:
-#       Checkout code from git
-#       - run:
-#           name: Install dependencies
-#           command: |
-#             your code here
-#       - run:
-#           name: Get backend url
-#           command: |
-#             your code here
-#             export API_URL="http://${BACKEND_IP}:3030"
-#             echo "${API_URL}"
-#       - run:
-#           name: Deploy frontend objects
-#           command: |
-#             your code here
-#       Here's where you will add some code to rollback on failure      
+            fi
+      - destroy-environment
+
+  deploy-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout      
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install python python-pip
+            pip install ansible 
+            pip install awscli
+      - run:
+          name: Get backend url
+          command: |
+            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "API_URL = ${API_URL}"
+            echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
+            cat frontend/.env
+      - run:
+          name: Deploy frontend objects
+          command: |
+            echo "--------cd frontend--------"
+            cd frontend
+            pwd
+            echo "--------npm install--------"
+            npm install
+            echo "--------npm run build--------"
+            npm run build
+            echo "--------tar dist--------"
+            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
+            ls -la
+            echo "--------cp dist to s3--------"
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive     
                     
-#   deploy-backend:
-#     docker:
-#       Docker image here that supports Ansible
-#     steps:
-#       Checkout code from git
-#       Add ssh keys with fingerprint
-#       attach workspace
-#       - run:
-#           name: Install dependencies
-#           command: |
-#             your code here
-#       - run:
-#           name: Deploy backend
-#           command: |
-#             your code here
-#       Here's where you will add some code to rollback on failure  
+  deploy-backend:
+    docker:
+      - image: python:3.11-rc-alpine
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [backend-build]         
+      - add_ssh_keys:
+          fingerprints: ["34:36:3c:94:f3:37:2e:b0:12:c8:94:e8:79:e6:54:1a:49:85:9f:e0"]
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            # your code here
+            apk add --update ansible 
+            apk add --update nodejs npm
+      - run:
+          name: Add env
+          command: |
+            echo "NODE_ENV=$NODE_ENV" >> backend/.env
+            echo "VERSION=$VERSION" >> backend/.env
+            echo "TYPEORM_CONNECTION=$TYPEORM_CONNECTION" >> backend/.env
+            echo "TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR" >> backend/.env
+            echo "TYPEORM_ENTITIES=$TYPEORM_ENTITIES" >> backend/.env
+            echo "TYPEORM_MIGRATIONS=$TYPEORM_MIGRATIONS" >> backend/.env
+            echo "TYPEORM_HOST=$TYPEORM_HOST" >> backend/.env
+            echo "TYPEORM_PORT=$TYPEORM_PORT" >> backend/.env
+            echo "TYPEORM_USERNAME=$TYPEORM_USERNAME" >> backend/.env
+            echo "TYPEORM_PASSWORD=$TYPEORM_PASSWORD" >> backend/.env
+            echo "TYPEORM_DATABASE=$TYPEORM_DATABASE" >> backend/.env
+            echo "--------cat .env--------"
+            cat backend/.env
+      - run:
+          name: Deploy backend
+          command: |
+            cd backend
+            pwd
+            ls -la
+            echo "--------npm install typescript -g--------"
+            npm install typescript -g
+            echo "--------npm i--------"
+            npm i 
+            echo "--------npm run build--------"
+            npm run build
+            echo "--------tar backend--------"
+            cd ..
+            tar -C backend -czf artifact.tar.gz .
+            pwd
+            echo "--------go to ansible--------"
+            cd .circleci/ansible
+            pwd
+            echo "Contents  of the inventory.txt file is -------"
+            cat inventory.txt
+            ansible-playbook -i inventory.txt deploy-backend.yml
 
 #   smoke-test:
 #     docker:
@@ -337,12 +405,12 @@ workflows:
               only: [main]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
-      # - run-migrations:
-      #     requires: [configure-infrastructure]
-      # - deploy-frontend:
-      #     requires: [run-migrations]
-      # - deploy-backend:
-      #     requires: [run-migrations]
+      - run-migrations:
+          requires: [configure-infrastructure]
+      - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations]
       # - smoke-test:
       #     requires: [deploy-backend, deploy-frontend]
       # - cloudfront-update:
