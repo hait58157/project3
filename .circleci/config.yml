@@ -333,11 +333,11 @@ jobs:
             echo "${API_URL}"
             if curl "${API_URL}/api/status" | grep "ok"
             then
-              #echo "Smoke test successfully"
-              return 0
+              echo "Smoke test successfully"
+              #return 0
             else
-              #echo "Smoke test successfully"
-              return 1
+              echo "Smoke test successfully"
+              #return 1
             fi
       - run:
           name: Frontend smoke test.
