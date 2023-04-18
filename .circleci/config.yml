@@ -3,24 +3,27 @@ version: 2.1
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
+    parameters:
+      workflow_id:
+          type: string   
     steps:
       - run:
-          name: Destroy environments
+          name: Destroy environment
           when: on_fail
           command: |
             aws s3 rb s3://udapeople-<< parameters.workflow_id >> --force
             aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.workflow_id >>
             aws cloudformation delete-stack --stack-name udapeople-backend-<< parameters.workflow_id >>
-
   revert-migrations:
-    description: Revert the last migration if successfully run in the current workflow.   
+    description: Revert the last migration if successfully run in the current workflow.
     parameters:
       workflow_id:
-          type: string 
+          type: string     
     steps:
       - run:
           name: Revert migrations
           when: on_fail
+          # Add when this will run
           command: |
             SUCCESS=$(curl --insecure  https://kvdb.io/TFbubBBBgVe2hXFeyRNXtT/migration_<< parameters.workflow_id >>)
             # Logic for reverting the database state
@@ -232,7 +235,7 @@ jobs:
                 # If you are using memstash.io, generate the token "7933fe63-4687-4fa1-8426-aa25aa1730ec" on the website
                 #curl -H "Content-Type: text/plain" -H "token: 7933fe63-4687-4fa1-8426-aa25aa1730ec" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
                 # If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
-                curl https://kvdb.io/9GE4jRtKznmVKRfvdBABBe/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+                curl https://kvdb.io/TFbubBBBgVe2hXFeyRNXtT/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
                 #echo "Run migrations successfully!"
             fi
       - destroy-environment:
