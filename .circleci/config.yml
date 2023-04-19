@@ -311,7 +311,7 @@ jobs:
             npm i
             npm run build
             cd ..
-            tar -C backend -czf artifact.tar.gz .
+            tar -C backend -czvf artifact.tar.gz .
             export BACKEND_IP=$(cat ~/inventory.txt)
             cd .circleci/ansible
             cat ~/inventory.txt
