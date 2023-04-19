@@ -292,7 +292,6 @@ jobs:
             apk add --update nodejs npm
             pip install ansible
             pip install awscli
-            apt update && apt install nodejs npm tar gzip -y
       - run:
           name: Add env
           command: |
