@@ -290,8 +290,6 @@ jobs:
           command: |
             apk add --update ansible 
             apk add --update nodejs npm
-            pip install ansible
-            pip install awscli
       - run:
           name: Add env
           command: |
