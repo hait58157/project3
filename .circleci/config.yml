@@ -276,11 +276,9 @@ jobs:
   
   deploy-backend:
     docker:
-      - image: python:3.11-rc-alpine
+      - image: python
     steps:
-      - checkout
-      - restore_cache:
-          keys: [backend-build]         
+      - checkout       
       - add_ssh_keys:
           fingerprints: ["34:36:3c:94:f3:37:2e:b0:12:c8:94:e8:79:e6:54:1a:49:85:9f:e0"]
       - attach_workspace:
@@ -316,7 +314,7 @@ jobs:
             export BACKEND_IP=$(cat ~/inventory.txt)
             cd .circleci/ansible
             cat ~/inventory.txt
-            ansible-playbook -i inventory.txt deploy-backend.yml
+            ansible-playbook -i ~/inventory.txt deploy-backend.yml
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
