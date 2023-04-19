@@ -334,26 +334,26 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
+          name: Echo inventory
+          command: |
+            cat ~/inventory.txt
+      - run:
           name: Backend smoke test.
           command: |
             export BACKEND_IP=$(cat ~/inventory.txt)
             export API_URL="http://${BACKEND_IP}:3030"
-            echo "${API_URL}"
-            if curl "${API_URL}/api/status" | grep "ok"
+            echo $API_URL
+            if curl "$API_URL/api/status" | grep "ok"
             then
               exit 0
             else
               exit 1
             fi
       - run:
-          name: Echo inventory
-          command: |
-            cat ~/inventory.txt
-      - run:
           name: Frontend smoke test.
           command: |
             URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/#/employees"            
-            echo ${URL} 
+            echo $URL
             if curl -s ${URL} | grep "Welcome"
             then
               exit 0
