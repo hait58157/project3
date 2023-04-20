@@ -261,8 +261,8 @@ jobs:
           name: Deploy frontend objects
           command: |
             cd frontend
-            npm install
-            npm run build
+            sudo npm install
+            sudo npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive     
       - destroy-environment:
@@ -286,7 +286,8 @@ jobs:
       - run:
           name: Add env
           command: |
-            echo "NODE_ENV=$NODE_ENV" >> backend/.env
+            echo ENVIRONMENT=production >> backend/.env
+            echo "NODE_ENV=production" >> backend/.env
             echo "VERSION=1" >> backend/.env
             echo "TYPEORM_CONNECTION=$TYPEORM_CONNECTION" >> backend/.env
             echo "TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR" >> backend/.env
