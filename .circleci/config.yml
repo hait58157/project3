@@ -222,10 +222,9 @@ jobs:
           name: Run migrations
           command: |
             cd backend
-            sudo npm i -g ionic
-            npm install
-            npm install typescript -g
-            npm run migrations > migrations_dump.txt
+            sudo npm install
+            sudo npm install typescript -g
+            sudo npm run migrations > migrations_dump.txt
       - run:
           name: Send migration results to kvdb.io
           command: |
@@ -246,10 +245,10 @@ jobs:
           name: Install dependencies
           command: |
             sudo apt-get update && sudo apt-get install python python-pip
-            pip install ansible 
-            pip install awscli
-            npm install
-            npm install typescript -g
+            sudo pip install ansible 
+            sudo pip install awscli
+            sudo npm install
+            sudo npm install typescript -g
       - run:
           name: Get backend url
           command: |
