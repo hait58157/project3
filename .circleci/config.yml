@@ -159,7 +159,7 @@ jobs:
               --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7} \
               --tags project=udapeople \
-              --region us-east-1 
+              --region us-east-1
       - run:
           name: Ensure front-end infrastructure exist
           command: |
@@ -215,9 +215,7 @@ jobs:
     docker:
       - image: circleci/node:13.8.0
     steps:
-      - checkout
-      - restore_cache:
-          keys: [backend-build]      
+      - checkout    
       - attach_workspace:
           at: ~/
       - run:
@@ -238,8 +236,6 @@ jobs:
                 curl https://kvdb.io/TFbubBBBgVe2hXFeyRNXtT/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
                 #echo "Run migrations successfully!"
             fi
-      - destroy-environment:
-          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
     
   deploy-frontend:
     docker:
@@ -258,7 +254,7 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            export BACKEND_IP=$(aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
+            export BACKEND_IP=$(aws --region us-east-1 ec2 describe-instances --filters "Name=instance-state-name,Values=running" "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --query 'Reservations[*].Instances[*].[PublicIpAddress]' --output text)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL = ${API_URL}"
             echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
@@ -310,10 +306,12 @@ jobs:
             npm i
             npm run build
             cd ..
+            # Zip the directory
             tar -C backend -czvf artifact.tar.gz .
             export BACKEND_IP=$(cat ~/inventory.txt)
             scp -r -o StrictHostKeyChecking=no artifact.tar.gz ubuntu@$BACKEND_IP:/home/ubuntu/
             cd .circleci/ansible
+            echo "Contents  of the ~/inventory.txt file is -------"
             cat ~/inventory.txt
             ansible-playbook -i ~/inventory.txt deploy-backend.yml
       - destroy-environment:
@@ -355,32 +353,32 @@ jobs:
             echo $URL
             if curl -s ${URL} | grep "Welcome"
             then
-              exit 1
+              exit 0
             else
               exit 1
             fi
-      - destroy-environment:
-          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      # - destroy-environment:
+      #     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}  
 
-  cloudfront-update:
-    docker:
-      - image: amazon/aws-cli
-    steps:
-      - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            yum -y install tar gzip curl
-      - run:
-          name: Update cloudfront distribution
-          command: |
-            aws cloudformation deploy \
-              --template-file .circleci/files/cloudfront.yml \
-              --stack-name InitialStack \
-              --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
-              --tags project=udapeople 
+  # cloudfront-update:
+  #   docker:
+  #     - image: amazon/aws-cli
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: Install dependencies
+  #         command: |
+  #           yum -y install tar gzip curl
+  #     - run:
+  #         name: Update cloudfront distribution
+  #         command: |
+  #           aws cloudformation deploy \
+  #             --template-file .circleci/files/cloudfront.yml \
+  #             --stack-name InitialStack \
+  #             --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
+  #             --tags project=udapeople 
 
 # cleanup:
 #     docker:
@@ -446,8 +444,8 @@ workflows:
           requires:
             - "deploy-frontend"
             - "deploy-backend"
-      - cloudfront-update:
-          requires:
-            - "smoke-test"
+      # - cloudfront-update:
+      #     requires:
+      #       - "smoke-test"
       # - cleanup:
       #     requires: [cloudfront-update]
