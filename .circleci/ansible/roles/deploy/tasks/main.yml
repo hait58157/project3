@@ -30,14 +30,15 @@
     production: yes
     state: present
 
-- name: Create backend
+- name: "Create backend"
   become: true
   shell: |
     mkdir /home/ubuntu/backend
     cp /home/ubuntu/artifact.tar.gz backend/
     cd backend/
     tar -xvf artifact.tar.gz
-- name: Start backend
+
+- name: "Start backend"
   become: true
   shell: |
     cd /home/ubuntu/backend/
