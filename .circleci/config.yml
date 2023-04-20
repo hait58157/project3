@@ -222,6 +222,7 @@ jobs:
           name: Run migrations
           command: |
             cd backend
+            sudo npm i -g ionic
             npm install
             npm install typescript -g
             npm run migrations > migrations_dump.txt
