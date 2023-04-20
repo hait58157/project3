@@ -327,7 +327,6 @@ jobs:
             pip install ansible
             pip install awscli
             apt update && apt install nodejs npm tar gzip -y
-            apt install typescript
       - attach_workspace:
           at: ~/
       - run:
