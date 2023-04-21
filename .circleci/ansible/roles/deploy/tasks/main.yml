@@ -47,6 +47,7 @@
   shell: |
     cd /home/ubuntu/backend/
     sudo npm install
-    sudo pm2 stop default
+    sudo pm2 stop 0
+    sudo npm install ts-node -g
     sudo pm2 start npm -- start
     sudo pm2 ls
