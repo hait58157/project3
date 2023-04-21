@@ -376,6 +376,18 @@ jobs:
           command: |
             yum -y install tar gzip curl
       - run:
+          name: Get Old CF ID
+          command: |
+            export OldWorkflowID=$(aws cloudformation \
+              list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
+              --no-paginate --output text)
+            echo $OldWorkflowID > ~/OldWorkflowID.txt
+            cat ~/OldWorkflowID.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - "OldWorkflowID.txt"
+      - run:
           name: Update cloudfront distribution
           command: |
             aws cloudformation deploy \
