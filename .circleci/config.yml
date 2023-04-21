@@ -384,24 +384,41 @@ jobs:
               --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople 
 
-# cleanup:
-#     docker:
-#       Docker image here
-#     steps:
-#       Checkout code from git
-#       - run:
-#           name: Get old stack workflow id
-#           command: |
-#             your code here
-#             export OldWorkflowID="the id here"
-#             export STACKS=[] #put the list of stacks here
-#       - run:
-#           name: Remove old stacks and files
-#           command: |
-#             if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
-#             then
-#               your code here
-#             fi
+cleanup:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - run:
+          name: Install dependencies
+          command: |
+            yum install tar gzip -y
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Get old stack workflow id
+          command: |
+            your code here
+            export OldWorkflowID="the id here"
+            export STACKS=[] #put the list of stacks here
+      - run:
+          name: Remove old stacks and files
+          command: |
+            cat ~/OldWorkflowID.txt
+            OldWorkflowID=$(cat ~/OldWorkflowID.txt)
+            echo OldWorkflowID: $OldWorkflowID
+            echo $OldWorkflowID
+            OldID=${OldWorkflowID:10:7}
+            CIRCLE_WORKFLOW_ID=${CIRCLE_WORKFLOW_ID:0:7}
+            echo CIRCLE_WORKFLOW_ID: $CIRCLE_WORKFLOW_ID
+            if [[ "$OldID" != "$CIRCLE_WORKFLOW_ID" ]]
+            then
+              echo "Delete confirmed"
+              aws s3 rb "s3://udapeople-$OldID" --force
+              aws cloudformation delete-stack --stack-name "udapeople-backend-$OldID"
+              aws cloudformation delete-stack --stack-name "udapeople-frontend-$OldID"
+            else
+              echo "Cannot cleanup resource"
+            fi
             
 
 workflows:
@@ -452,5 +469,5 @@ workflows:
       - cloudfront-update:
           requires:
             - "smoke-test"
-      # - cleanup:
-      #     requires: [cloudfront-update]
+      - cleanup:
+          requires: [cloudfront-update]
