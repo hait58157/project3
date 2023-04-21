@@ -419,9 +419,9 @@ jobs:
             if [[ "$OldID" != "$CIRCLE_WORKFLOW_ID" ]]
             then
               echo "Delete confirmed"
-              aws s3 rm "s3://udapeople-$OldID" --recursive
-              aws cloudformation delete-stack --stack-name "udapeople-backend-$OldID"
-              aws cloudformation delete-stack --stack-name "udapeople-frontend-$OldID"
+              aws s3 rm "s3://udapeople-${$OldID}" --recursive
+              aws cloudformation delete-stack --stack-name "udapeople-backend-${$OldID}"
+              aws cloudformation delete-stack --stack-name "udapeople-frontend-${$OldID}"
             else
               echo "Cannot cleanup resource"
             fi
