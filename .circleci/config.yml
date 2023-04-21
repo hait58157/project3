@@ -307,10 +307,10 @@ jobs:
           name: Deploy backend
           command: |
             cd backend
-            npm install typescript -g
-            npm install ts-node -g
-            npm i
-            npm run build
+            sudo npm install typescript -g
+            sudo npm install ts-node -g
+            sudo npm i
+            sudo npm run build
             cd ..
             # Zip the directory
             tar -C backend -czvf artifact.tar.gz .
