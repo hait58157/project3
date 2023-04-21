@@ -375,10 +375,6 @@ jobs:
           name: Install dependencies
           command: |
             yum -y install tar gzip curl
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - "OldWorkflowID.txt"
       - run:
           name: Update cloudfront distribution
           command: |
