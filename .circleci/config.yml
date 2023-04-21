@@ -308,7 +308,7 @@ jobs:
           command: |
             cd backend
             npm install typescript -g
-            npm install -g ts-node
+            npm install ts-node -g
             npm i
             npm run build
             cd ..
@@ -362,28 +362,28 @@ jobs:
             else
               exit 1
             fi
-      # - destroy-environment:
-      #     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}  
 
-  # cloudfront-update:
-  #   docker:
-  #     - image: amazon/aws-cli
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: Install dependencies
-  #         command: |
-  #           yum -y install tar gzip curl
-  #     - run:
-  #         name: Update cloudfront distribution
-  #         command: |
-  #           aws cloudformation deploy \
-  #             --template-file .circleci/files/cloudfront.yml \
-  #             --stack-name InitialStack \
-  #             --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
-  #             --tags project=udapeople 
+  cloudfront-update:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            yum -y install tar gzip curl
+      - run:
+          name: Update cloudfront distribution
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/cloudfront.yml \
+              --stack-name InitialStack \
+              --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
+              --tags project=udapeople 
 
 # cleanup:
 #     docker:
@@ -450,8 +450,8 @@ workflows:
           requires:
             - "deploy-frontend"
             - "deploy-backend"
-      # - cloudfront-update:
-      #     requires:
-      #       - "smoke-test"
+      - cloudfront-update:
+          requires:
+            - "smoke-test"
       # - cleanup:
       #     requires: [cloudfront-update]
