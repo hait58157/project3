@@ -372,10 +372,6 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
-          command: |
-            yum -y install tar gzip curl
-      - run:
           name: Get Old CF ID
           command: |
             export OldWorkflowID=$(aws cloudformation \
@@ -388,6 +384,10 @@ jobs:
           paths:
             - "OldWorkflowID.txt"
       - run:
+          name: Install dependencies
+          command: |
+            yum -y install tar gzip curl
+      - run:
           name: Switch env prod
           command: |
             aws cloudformation deploy \
@@ -395,7 +395,7 @@ jobs:
             --stack-name InitialStack \
             --parameter-overrides WorkflowID="udapeople-${CIRCLE_WORKFLOW_ID:0:7}" \
             --tags project=udapeople
-            
+
   cleanup:
     docker:
       - image: amazon/aws-cli
