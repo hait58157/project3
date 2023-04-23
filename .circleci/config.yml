@@ -374,14 +374,13 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            yum -y install tar gzip curl
-      - attach_workspace:
-          at: ~/
+            yum install tar gzip -y
       - run:
-          name: Get Old ID
+          name: Get Old CF ID
           command: |
-            export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
-            echo OldWorkflowID: $OldWorkflowID
+            export OldWorkflowID=$(aws cloudformation \
+              list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
+              --no-paginate --output text --region us-east-1) 
             echo $OldWorkflowID > ~/OldWorkflowID.txt
             cat ~/OldWorkflowID.txt
       - persist_to_workspace:
@@ -391,41 +390,40 @@ jobs:
       - run:
           name: Switch env prod
           command: |
+            # Change the initial stack name, as applicable to you
             aws cloudformation deploy \
             --template-file .circleci/files/cloudfront.yml \
             --stack-name InitialStack \
             --parameter-overrides WorkflowID="udapeople-${CIRCLE_WORKFLOW_ID:0:7}" \
-            --tags project=udapeople      
-
+            --tags project=udapeople
   cleanup:
     docker:
       - image: amazon/aws-cli
     steps:
-      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            yum install tar gzip -y
+      - attach_workspace:
+          at: ~/
       - run:
           name: Clean OldWorkflow
           command: |
-            # your code here            
+            cat ~/OldWorkflowID.txt
             OldWorkflowID=$(cat ~/OldWorkflowID.txt)
             echo OldWorkflowID: $OldWorkflowID
             echo $OldWorkflowID
             OldID=${OldWorkflowID:10:7}
-            echo $OldID
-            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
-                    --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
-            echo Stack names: "${STACKS[@]}"      
-            echo CIRCLE_WORKFLOW_ID "${CIRCLE_WORKFLOW_ID:0:7}"
-            if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldID}" ]]
+            CIRCLE_WORKFLOW_ID=${CIRCLE_WORKFLOW_ID:0:7}
+            echo CIRCLE_WORKFLOW_ID: $CIRCLE_WORKFLOW_ID
+            if [[ "$OldID" != "$CIRCLE_WORKFLOW_ID" ]]
             then
-              # your code here
-              echo OldWorkflowID: "${OldWorkflowID}"
-              echo CIRCLE_WORKFLOW_ID "${CIRCLE_WORKFLOW_ID:0:7}"
-              echo "Found stacks with: ${OldWorkflowID}"              
-              aws s3 rb s3://udapeople-${OldID} --force
-              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldID}"
-              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldID}"
+              echo "Delete confirmed"
+              aws s3 rb "s3://udapeople-$OldID" --force
+              aws cloudformation delete-stack --stack-name "udapeople-backend-$OldID"
+              aws cloudformation delete-stack --stack-name "udapeople-frontend-$OldID"
             else
-              echo "Not found stack with ${OldID}"
+              echo "Cannot cleanup resource"
             fi
             
 
