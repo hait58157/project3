@@ -379,7 +379,9 @@ jobs:
           at: ~/
       - run:
           name: Get Old ID
+          command: |
             export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
+            echo OldWorkflowID: $OldWorkflowID
             echo $OldWorkflowID >> ~/OldWorkflowID.txt
             cat ~/OldWorkflowID.txt
       - persist_to_workspace:
