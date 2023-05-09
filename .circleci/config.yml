@@ -248,7 +248,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            sudo apt-get update && sudo apt-get install python python-pip
+            sudo apt-get install python python-pip
             sudo pip install ansible 
             sudo pip install awscli
       - run:
