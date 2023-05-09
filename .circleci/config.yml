@@ -64,6 +64,7 @@ jobs:
           name: Back-end build
           command: |
              cd backend
+             sudo npm cache clean –force
              sudo npm install -g react-scripts
              sudo npm install
              sudo npm run build
