@@ -46,7 +46,6 @@ jobs:
           name: Build front-end
           command: |
             cd frontend
-            sudo npm install -g react-scripts
             sudo npm install
             sudo npm run build
       - save_cache:
@@ -64,8 +63,6 @@ jobs:
           name: Back-end build
           command: |
              cd backend
-             sudo npm cache clean –force
-             sudo npm install -g react-scripts
              sudo npm install
              sudo npm run build
       - save_cache:
