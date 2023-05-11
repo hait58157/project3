@@ -244,7 +244,6 @@ jobs:
       - run:
           name: Install tar utility
           command: |
-            sudo apt-get update 
             sudo apt-get install python python-pip
             pip install ansible
             pip install awscli
