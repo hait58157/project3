@@ -251,11 +251,8 @@ jobs:
             sudo apt-get install python python-pip
             pip install ansible
             pip install awscli
-      - run:
-          name: Install ansible and awscli
-          command: |
-            pip install ansible 
-            pip install awscli
+            sudo npm install
+            sudo npm install typescript -g
       - run:
           name: Get backend url
           command: |
@@ -385,6 +382,8 @@ jobs:
             export OldWorkflowID=$(aws cloudformation \
               list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
               --no-paginate --output text)
+            echo OldWorkflowID: "${OldWorkflowID}"
+            echo CIRCLE_WORKFLOW_ID "${CIRCLE_WORKFLOW_ID:0:7}"
             echo $OldWorkflowID > ~/OldWorkflowID.txt
             cat ~/OldWorkflowID.txt
       - persist_to_workspace:
