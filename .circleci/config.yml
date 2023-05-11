@@ -251,8 +251,8 @@ jobs:
             sudo apt-get install python python-pip
             pip install ansible
             pip install awscli
-            sudo npm install
-            sudo npm install typescript -g
+            # sudo npm install
+            # sudo npm install typescript -g
       - run:
           name: Get backend url
           command: |
@@ -265,6 +265,8 @@ jobs:
           name: Deploy frontend
           command: |
             cd frontend
+            npm install
+            npm install typescript -g
             npm install
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
