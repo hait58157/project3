@@ -45,9 +45,7 @@ jobs:
       - run:
           name: Build front-end
           command: |
-            cd frontend
-            sudo npm install
-            sudo npm run build
+            cd frontend && npm install && npm run build
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
@@ -62,9 +60,7 @@ jobs:
       - run:
           name: Back-end build
           command: |
-             cd backend
-             sudo npm install
-             sudo npm run build
+             cd backend && npm install && npm run build
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
